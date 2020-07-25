@@ -1,18 +1,33 @@
-const users = require('../data/users.json');
+const fsPromises = require("fs").promises;
+
+const path = require("path");
+const filePath = path.join(__dirname, "..", "data", "users.json");
 
 const getUsers = (req, res) => {
-  res.send(users);
+  fsPromises
+    .readFile(filePath, { encoding: "utf8" })
+    .then((data) => {
+      res.send(JSON.parse(data));
+    })
+    .catch((err) => {
+      res.status(500).send(err);
+    });
 };
 
-const getUser = (req, res) => {
-  const { id } = req.params;
+const getUser = ({params: {id}}, res) => {
+  fsPromises
+    .readFile(filePath, { encoding: "utf8" })
+    .then((data) => {
+      if (!JSON.parse(data).find((user) => user._id === id)) {
+        res.status(404).send({message: "Нет пользователя с таким id"});
+        return;
+      }
 
-  if (!users.some((user) => user._id === id)) {
-    res.status(404).send({ message: 'Нет пользователя с таким id' });
-    return;
-  }
-
-  res.send(users.find((user) => user._id === id));
+      res.send(JSON.parse(data).find((user) => user._id === id));
+    })
+    .catch((err) => {
+      res.status(500).send(err);
+    });
 };
 
 module.exports = {
