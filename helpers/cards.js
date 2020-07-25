@@ -1,11 +1,12 @@
-const fsPromises = require("fs").promises;
+const fsPromises = require('fs').promises;
 
-const path = require("path");
-const filePath = path.join(__dirname, "..", "data", "cards.json");
+const path = require('path');
+
+const filePath = path.join(__dirname, '..', 'data', 'cards.json');
 
 const getCards = (req, res) => {
   fsPromises
-    .readFile(filePath, { encoding: "utf8" })
+    .readFile(filePath, { encoding: 'utf8' })
     .then((data) => {
       res.send(JSON.parse(data));
     })
@@ -14,18 +15,18 @@ const getCards = (req, res) => {
     });
 };
 
-const getCard = ({params: {id}}, res) => {
- fsPromises
-    .readFile(filePath, { encoding: "utf8" })
+const getCard = ({ params: { id } }, res) => {
+  fsPromises
+    .readFile(filePath, { encoding: 'utf8' })
     .then((data) => {
       if (!JSON.parse(data)[id]) {
-        res.status(404).send({ message: "Карточка с таким id не найдена" });
+        res.status(404).send({ message: 'Карточка с таким id не найдена' });
         return;
       }
 
       res.send(JSON.parse(data)[id]);
     })
-    .catch(() => {
+    .catch((err) => {
       res.status(500).send(err);
     });
 };

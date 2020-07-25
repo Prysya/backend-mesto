@@ -1,11 +1,12 @@
-const fsPromises = require("fs").promises;
+const fsPromises = require('fs').promises;
 
-const path = require("path");
-const filePath = path.join(__dirname, "..", "data", "users.json");
+const path = require('path');
+
+const filePath = path.join(__dirname, '..', 'data', 'users.json');
 
 const getUsers = (req, res) => {
   fsPromises
-    .readFile(filePath, { encoding: "utf8" })
+    .readFile(filePath, { encoding: 'utf8' })
     .then((data) => {
       res.send(JSON.parse(data));
     })
@@ -14,12 +15,12 @@ const getUsers = (req, res) => {
     });
 };
 
-const getUser = ({params: {id}}, res) => {
+const getUser = ({ params: { id } }, res) => {
   fsPromises
-    .readFile(filePath, { encoding: "utf8" })
+    .readFile(filePath, { encoding: 'utf8' })
     .then((data) => {
       if (!JSON.parse(data).find((user) => user._id === id)) {
-        res.status(404).send({message: "Нет пользователя с таким id"});
+        res.status(404).send({ message: 'Нет пользователя с таким id' });
         return;
       }
 
