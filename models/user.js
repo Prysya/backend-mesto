@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     validate: {
       validator: (link) => validator(link),
-      message: 'Неправильная ссылка',
     },
     required: true,
   },

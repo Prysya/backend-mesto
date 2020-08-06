@@ -12,7 +12,6 @@ const cardSchema = new mongoose.Schema({
     type: String,
     validate: {
       validator: (link) => validator(link),
-      message: 'Неправильный формат ссылки',
     },
     required: true,
   },

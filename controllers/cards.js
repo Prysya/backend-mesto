@@ -6,7 +6,7 @@ module.exports.getCards = (req, res) => {
       res.send({ data: cards });
     })
     .catch(() => {
-      res.status(500).send({ message: 'Ошибка сервера' });
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -15,13 +15,27 @@ module.exports.createCard = (req, res) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send(err));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res
+          .status(400)
+          .send({ message: 'Ошибка валидации данных карточки' });
+      }
+
+      return res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 module.exports.deleteCard = ({ params: { id } }, res) => {
   Card.findByIdAndRemove(id)
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Ошибка сервера' }));
+    .then(() => res.send({ message: 'Карточка удалена' }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(404).send({ message: 'Нет карточки с таким id' });
+      }
+
+      return res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 module.exports.likeCard = (req, res) => {
@@ -31,7 +45,7 @@ module.exports.likeCard = (req, res) => {
     { new: true },
   )
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Ошибка сервера' }));
+    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
 };
 
 module.exports.dislikeCard = (req, res) => {
@@ -42,5 +56,5 @@ module.exports.dislikeCard = (req, res) => {
   )
     .populate('user')
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Ошибка сервера' }));
+    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
 };
