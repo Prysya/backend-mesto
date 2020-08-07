@@ -12,9 +12,10 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUser = ({ params: { id } }, res) => {
   User.findById(id)
+    .orFail(() => new Error('ID не найден'))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.message === 'ID не найден') {
         return res.status(404).send({ message: 'Нет пользователя с таким id' });
       }
 
@@ -46,8 +47,13 @@ module.exports.updateUserData = (req, res) => {
     { name, about },
     { new: true, runValidators: true },
   )
+    .orFail(() => new Error('ID не найден'))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
+      if (err.name === 'CastError' || err.message === 'ID не найден') {
+        return res.status(404).send({ message: 'Нет пользователя с таким id' });
+      }
+
       if (err.name === 'ValidationError') {
         return res
           .status(400)
@@ -66,8 +72,13 @@ module.exports.updateUserAvatar = (req, res) => {
     { avatar },
     { new: true, runValidators: true },
   )
+    .orFail(() => new Error('ID не найден'))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
+      if (err.name === 'CastError' || err.message === 'ID не найден') {
+        return res.status(404).send({ message: 'Нет пользователя с таким id' });
+      }
+
       if (err.name === 'ValidationError') {
         return res
           .status(400)

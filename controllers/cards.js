@@ -28,9 +28,10 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCard = ({ params: { id } }, res) => {
   Card.findByIdAndRemove(id)
+    .orFail(() => new Error('ID не найден'))
     .then(() => res.send({ message: 'Карточка удалена' }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.message === 'ID не найден') {
         return res.status(404).send({ message: 'Нет карточки с таким id' });
       }
 
@@ -44,8 +45,15 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(() => new Error('ID не найден'))
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError' || err.message === 'ID не найден') {
+        return res.status(404).send({ message: 'Нет карточки с таким id' });
+      }
+
+      return res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 module.exports.dislikeCard = (req, res) => {
@@ -54,6 +62,13 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(() => new Error('ID не найден'))
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError' || err.message === 'ID не найден') {
+        return res.status(404).send({ message: 'Нет карточки с таким id' });
+      }
+
+      return res.status(500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
