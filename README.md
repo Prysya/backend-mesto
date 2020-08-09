@@ -2,9 +2,9 @@
     <img src="https://res.cloudinary.com/prysya/image/upload/v1595618589/backend_mesto_logo_kfbwvy.svg" width="1060">
 </p>
 <p align="center">
-    <img alt="Version 0.0.5" src="https://img.shields.io/badge/Version-0.0.5-blue.svg" />
+    <img alt="Version 0.1.1" src="https://img.shields.io/badge/Version-0.1.1-blue.svg" />
     <img alt="Stars *" src="https://img.shields.io/badge/Stars-2-green.svg" />
-    <img alt="Alpha Quality" src="https://img.shields.io/badge/status-Alpha-orange.svg" >
+    <img alt="Beta Quality" src="https://img.shields.io/badge/status-Beta-orange.svg" >
 </p>
 
 
