@@ -26,10 +26,18 @@ module.exports.createCard = (req, res) => {
     });
 };
 
-module.exports.deleteCard = ({ params: { id } }, res) => {
-  Card.findByIdAndRemove(id)
+module.exports.deleteCard = (req, res) => {
+  Card.findById(req.params.cardId)
     .orFail(() => new Error('ID не найден'))
-    .then(() => res.send({ message: 'Карточка удалена' }))
+    .then((card) => {
+      if (card.owner._id.toString() !== req.user._id) {
+        return res.status(401).send({ message: 'Необходима авторизация' });
+      }
+
+      return Card.deleteOne(card)
+        .then(() => res.send({ message: 'Карточка удалена' }))
+        .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
+    })
     .catch((err) => {
       if (err.name === 'CastError' || err.message === 'ID не найден') {
         return res.status(404).send({ message: 'Нет карточки с таким id' });
