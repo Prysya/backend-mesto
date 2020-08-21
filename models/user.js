@@ -8,12 +8,22 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 2,
     maxlength: 30,
+    validate: {
+      validator(name) {
+        return !validator.isEmpty(name, { ignore_whitespace: true });
+      },
+    },
   },
   about: {
     type: String,
     required: true,
     minlength: 2,
     maxlength: 30,
+    validate: {
+      validator(about) {
+        return !validator.isEmpty(about, { ignore_whitespace: true });
+      },
+    },
   },
   avatar: {
     type: String,
