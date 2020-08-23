@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const schemaValidator = require('../utils/passwordValidator');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -30,8 +31,12 @@ module.exports.createUser = (req, res) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  if (!password || password.length < 8) {
-    return res.status(400).send({ message: 'Длинна пароля менее 8 символов' });
+  if (!password || password.length < 8 || !schemaValidator.validate(password)) {
+    return res
+      .status(400)
+      .send({
+        message: 'Длинна пароля менее 8 символов, либо пароль не валиден',
+      });
   }
 
   return bcrypt
@@ -58,9 +63,9 @@ module.exports.createUser = (req, res) => {
           .send({ message: 'Ошибка валидации данных пользователя' });
       }
 
-      if (err.code === 11000) {
+      if (err.name === 'MongoError' && err.code === 11000) {
         return res
-          .status(400)
+          .status(409)
           .send({ message: 'Данный email уже зарегестрирован' });
       }
 
