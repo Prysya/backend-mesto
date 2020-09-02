@@ -1,4 +1,7 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const schemaValidator = require('../utils/passwordValidator');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -24,15 +27,46 @@ module.exports.getUser = ({ params: { id } }, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
+  if (!password || password.length < 8 || !schemaValidator.validate(password)) {
+    return res
+      .status(400)
+      .send({
+        message: 'Длинна пароля менее 8 символов, либо пароль не валиден',
+      });
+  }
+
+  return bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
+    .then((user) => res.send({
+      data: {
+        email: user.email,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      },
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res
           .status(400)
           .send({ message: 'Ошибка валидации данных пользователя' });
+      }
+
+      if (err.name === 'MongoError' && err.code === 11000) {
+        return res
+          .status(409)
+          .send({ message: 'Данный email уже зарегестрирован' });
       }
 
       return res.status(500).send({ message: 'На сервере произошла ошибка' });
@@ -80,11 +114,31 @@ module.exports.updateUserAvatar = (req, res) => {
       }
 
       if (err.name === 'ValidationError') {
-        return res
-          .status(400)
-          .send({ message: 'Ошибка валидации ссылки' });
+        return res.status(400).send({ message: 'Ошибка валидации ссылки' });
       }
 
       return res.status(500).send({ message: 'На сервере произошла ошибка' });
     });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  const { NODE_ENV, JWT_SECRET } = process.env;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        { expiresIn: '7d' },
+      );
+
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+        })
+        .end();
+    })
+    .catch((err) => res.status(401).send({ message: err.message }));
 };
