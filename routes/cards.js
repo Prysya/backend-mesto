@@ -9,6 +9,9 @@ const {
 } = require('../controllers/cards');
 const { cardSchema, objectIdSchema } = require('../joi-schemas/index');
 const { verifyCardId } = require('../middlewares/object-id');
+const auth = require('../middlewares/auth');
+
+router.use(auth);
 
 router.get('/', getCards);
 

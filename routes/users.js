@@ -14,6 +14,9 @@ const {
   userAvatarSchema,
   objectIdSchema,
 } = require('../joi-schemas/index');
+const auth = require('../middlewares/auth');
+
+router.use(auth);
 
 router.get('/', getUsers);
 router.get(

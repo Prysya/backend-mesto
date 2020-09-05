@@ -5,7 +5,6 @@ const middlewaresRouter = require('../middlewares/index');
 const { errorsHandler } = require('../middlewares/errors-handler');
 const register = require('./registration');
 const authorization = require('./authorization');
-const auth = require('../middlewares/auth');
 const users = require('./users');
 const cards = require('./cards');
 const error = require('./errors');
@@ -23,9 +22,6 @@ router.get('/crash-test', () => {
 
 router.use('/signin', authorization);
 router.use('/signup', register);
-
-router.use(auth);
-
 router.use('/cards', cards);
 router.use('/users', users);
 router.use('*', error);
