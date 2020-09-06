@@ -21,8 +21,8 @@ router.use(auth);
 router.get('/', getUsers);
 router.get(
   '/:id',
-  verifyUserId,
   celebrate({ params: objectIdSchema }),
+  verifyUserId,
   getUser,
 );
 
