@@ -19,7 +19,10 @@ const messages = {
     idIsNotFound: 'Нет пользователя с таким id',
     passwordIsNotValid: 'Длинна пароля менее 8 символов, либо пароль не валиден',
   },
-
+  validation: {
+    urlIsNotValid: 'URL невалиден',
+    notFound: 'Запрашиваемый ресурс не найден',
+  },
 };
 
 module.exports = messages;
