@@ -41,7 +41,7 @@ module.exports.createCard = async (req, res, next) => {
 
 module.exports.deleteCard = async (req, res, next) => {
   try {
-    const card = await Card.findById(req.params.cardId).orFail(
+    const card = await Card.findById(req.params.id).orFail(
       () => new NotFoundError(messages.card.idIsNotFound),
     );
 
@@ -59,7 +59,7 @@ module.exports.deleteCard = async (req, res, next) => {
 module.exports.likeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
-      req.params.cardId,
+      req.params.id,
       { $addToSet: { likes: req.user._id } },
       { new: true },
     );
@@ -73,7 +73,7 @@ module.exports.likeCard = async (req, res, next) => {
 module.exports.dislikeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
-      req.params.cardId,
+      req.params.id,
       { $pull: { likes: req.user._id } },
       { new: true },
     );

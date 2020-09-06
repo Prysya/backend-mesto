@@ -24,22 +24,22 @@ router.post(
 );
 
 router.delete(
-  '/:cardId',
+  '/:id',
+  celebrate({ params: objectIdSchema }),
   verifyCardId,
-  celebrate({ body: objectIdSchema }),
   deleteCard,
 );
 
 router.put(
-  '/:cardId/likes',
+  '/:id/likes',
+  celebrate({ params: objectIdSchema }),
   verifyCardId,
-  celebrate({ body: objectIdSchema }),
   likeCard,
 );
 router.delete(
-  '/:cardId/likes',
+  '/:id/likes',
+  celebrate({ params: objectIdSchema }),
   verifyCardId,
-  celebrate({ body: objectIdSchema }),
   dislikeCard,
 );
 
