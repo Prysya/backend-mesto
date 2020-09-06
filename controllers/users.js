@@ -109,6 +109,7 @@ module.exports.login = async (req, res, next) => {
       .cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
+        sameSite: true,
       });
 
     res.status(200).send({ message: messages.auth.authIsSuccess });
