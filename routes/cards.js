@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { celebrate } = require('celebrate');
 const {
   getCards,
   createCard,
@@ -6,12 +7,40 @@ const {
   likeCard,
   dislikeCard,
 } = require('../controllers/cards');
+const { cardSchema, objectIdSchema } = require('../joi-schemas/index');
+const { verifyCardId } = require('../middlewares/object-id');
+const auth = require('../middlewares/auth');
+
+router.use(auth);
 
 router.get('/', getCards);
-router.post('/', createCard);
-router.delete('/:cardId', deleteCard);
 
-router.put('/:cardId/likes', likeCard);
-router.delete('/:cardId/likes', dislikeCard);
+router.post(
+  '/',
+  celebrate({
+    body: cardSchema,
+  }),
+  createCard,
+);
+
+router.delete(
+  '/:id',
+  celebrate({ params: objectIdSchema }),
+  verifyCardId,
+  deleteCard,
+);
+
+router.put(
+  '/:id/likes',
+  celebrate({ params: objectIdSchema }),
+  verifyCardId,
+  likeCard,
+);
+router.delete(
+  '/:id/likes',
+  celebrate({ params: objectIdSchema }),
+  verifyCardId,
+  dislikeCard,
+);
 
 module.exports = router;

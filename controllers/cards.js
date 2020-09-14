@@ -1,82 +1,85 @@
+const escape = require('escape-html');
 const Card = require('../models/card');
+const {
+  BadRequestError,
+  NotFoundError,
+  UnauthorizedError,
+} = require('../errors/index');
+const messages = require('../utils/messages');
 
-module.exports.getCards = (req, res) => {
-  Card.find({})
-    .then((cards) => {
-      res.send({ data: cards });
-    })
-    .catch(() => {
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
-    });
+const checkCardAndSend = (card, res) => {
+  if (!card) {
+    throw new NotFoundError(messages.card.idIsNotFound);
+  }
+
+  return res.send({ data: card });
 };
 
-module.exports.createCard = (req, res) => {
-  const { name, link } = req.body;
-
-  Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res
-          .status(400)
-          .send({ message: 'Ошибка валидации данных карточки' });
-      }
-
-      return res.status(500).send({ message: 'На сервере произошла ошибка' });
-    });
+module.exports.getCards = async (req, res, next) => {
+  try {
+    const cards = await Card.find({}).populate('owner');
+    res.send(cards);
+  } catch (err) {
+    next(err);
+  }
 };
 
-module.exports.deleteCard = (req, res) => {
-  Card.findById(req.params.cardId)
-    .orFail(() => new Error('ID не найден'))
-    .then((card) => {
-      if (card.owner._id.toString() !== req.user._id) {
-        return res.status(401).send({ message: 'Необходима авторизация' });
-      }
+module.exports.createCard = async (req, res, next) => {
+  try {
+    const { name, link } = req.body;
 
-      return Card.deleteOne(card)
-        .then(() => res.send({ message: 'Карточка удалена' }))
-        .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
-    })
-    .catch((err) => {
-      if (err.name === 'CastError' || err.message === 'ID не найден') {
-        return res.status(404).send({ message: 'Нет карточки с таким id' });
-      }
+    const card = await Card.create({ name: escape(name), link, owner: req.user._id });
+    res.status(201).send({ data: card });
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError(messages.card.isNotValid));
+    }
 
-      return res.status(500).send({ message: 'На сервере произошла ошибка' });
-    });
+    next(err);
+  }
 };
 
-module.exports.likeCard = (req, res) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
-    { new: true },
-  )
-    .orFail(() => new Error('ID не найден'))
-    .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'CastError' || err.message === 'ID не найден') {
-        return res.status(404).send({ message: 'Нет карточки с таким id' });
-      }
+module.exports.deleteCard = async (req, res, next) => {
+  try {
+    const card = await Card.findById(req.params.id).orFail(
+      () => new NotFoundError(messages.card.idIsNotFound),
+    );
 
-      return res.status(500).send({ message: 'На сервере произошла ошибка' });
-    });
+    if (card.owner._id.toString() !== req.user._id) {
+      throw new UnauthorizedError(messages.auth.notAuthorised);
+    }
+
+    await Card.deleteOne(card);
+    res.send({ message: messages.card.isDeleted });
+  } catch (err) {
+    next(err);
+  }
 };
 
-module.exports.dislikeCard = (req, res) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $pull: { likes: req.user._id } },
-    { new: true },
-  )
-    .orFail(() => new Error('ID не найден'))
-    .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'CastError' || err.message === 'ID не найден') {
-        return res.status(404).send({ message: 'Нет карточки с таким id' });
-      }
+module.exports.likeCard = async (req, res, next) => {
+  try {
+    const card = await Card.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { likes: req.user._id } },
+      { new: true },
+    );
 
-      return res.status(500).send({ message: 'На сервере произошла ошибка' });
-    });
+    checkCardAndSend(card, res);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.dislikeCard = async (req, res, next) => {
+  try {
+    const card = await Card.findByIdAndUpdate(
+      req.params.id,
+      { $pull: { likes: req.user._id } },
+      { new: true },
+    );
+
+    checkCardAndSend(card, res);
+  } catch (err) {
+    next(err);
+  }
 };
