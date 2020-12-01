@@ -26,7 +26,7 @@
     "mongoose": "^5.9.27",
     "mongoose-unique-validator": "^2.0.3",
     "password-validator": "^5.1.0",
-    "validator": "^13.1.1",
+    "validator": "^13.5.1",
     "winston": "^3.3.3"
   },
   "devDependencies": {
